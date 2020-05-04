@@ -1,0 +1,33 @@
+<idea-plugin>
+    <id>com.github.ludwig247.clion.DeSCAM</id>
+    <name>DeSCAM Check</name>
+    <vendor email="ludwig@eit.uni-kl.de" url="https://github.com/ludwig247/">Tobias Ludwig</vendor>
+    <description><![CDATA[
+    DeSCAM's SystemC-PPA files inspection plugin for CLion.<br/><br/>
+    <b>Features:</b><br/>
+     - descam_check.py is used to check your SystemC-PPA model implementation for compliance. <br/>
+     - Suspicious code is highlighted and lint messages are displayed. <br/>
+     - The plugin supports both Unix and Windows based systems. <br/>
+    <br/>
+      <b>Usage:</b><br/>
+        - Download the descamcheck plugin from <URL>https://github.com/ludwig247/DeSCAM/tree/feature-logging/plugins/CLion</URL><br/>
+        - Drag & drop the plugin onto CLion to install it.<br/>
+        - Go to File -> Settings -> DeSCAM Check -> fill in the absolute paths to <b>python</b> and <b>descam_check.py</b><br/>
+        - To check a file, Go to Code -> Run Inspection by Name... (or CTRL + ALT + SHIFT + I) -> type descam and hit enter<br/>
+        - Set the inpection scope to File and click OK.<br/>
+        - If suspicious code is found, a new window will show up with lint messages. <br/>
+        - Click on a message to highlight suspicious code.<br/><br/>
+    ]]></description>
+
+    <depends>com.intellij.modules.clion</depends>
+    <extensions defaultExtensionNs="com.intellij">
+        <localInspection implementationClass="com.DeSCAM.Check.FileChecker"
+                         shortName="descamcheck"
+                         displayName="DeSCAM: check SystemC-PPA files for compliance"
+                         groupName="SystemC-PPA"
+                         id="DescamCheckInspection"
+                         enabledByDefault="false"/>
+        <applicationConfigurable instance="com.DeSCAM.Check.Option"
+                                 displayName="DeSCAM Check"/>
+    </extensions>
+</idea-plugin>
