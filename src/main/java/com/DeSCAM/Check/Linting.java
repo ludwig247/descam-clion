@@ -119,34 +119,38 @@ public class Linting {
             JSONArray messagesArray = (JSONArray) parser.parse(new InputStreamReader(inStream));
             if (messagesArray != null) {
                 for (Object object : messagesArray) {
-                    JSONObject jsonMessage = (JSONObject) object;
-                    String fileDir = (String) jsonMessage.get("file");
-                    String message = (String) jsonMessage.get("message");
-                    if (message == null || fileDir == null || !fileDir.equals(file)) continue;
+                    try {
+                        JSONObject jsonMessage = (JSONObject) object;
+                        String fileDir = (String) jsonMessage.get("file");
+                        String message = (String) jsonMessage.get("message");
+                        if (message == null || fileDir == null || !fileDir.equals(file)) continue;
 
-                    String severityLevel = (String) jsonMessage.get("severity");
-                    if (severityLevel == null) severityLevel = "Error";
+                        String severityLevel = (String) jsonMessage.get("severity");
+                        if (severityLevel == null) severityLevel = "Error";
 
-                    String violationType = (String) jsonMessage.get("violation");
-                    if (violationType == null) violationType = "SystemC-PPA Compliance";
+                        String violationType = (String) jsonMessage.get("violation");
+                        if (violationType == null) violationType = "SystemC-PPA Compliance";
 
-                    JSONArray lineArrays = (JSONArray) jsonMessage.get("line");
-                    if (lineArrays == null) continue;
-                    JSONArray rowArray = (JSONArray) lineArrays.get(0);
-                    JSONArray columnArray = (JSONArray) lineArrays.get(1);
-                    if (rowArray == null || columnArray == null) continue;
-                    int rowStartNum = (int) (long) rowArray.get(0);
-                    int rowEndNum = (int) (long) rowArray.get(1);
-                    int colStartNum = (int) (long) columnArray.get(0);
-                    int colEndNum = (int) (long) columnArray.get(1);
+                        JSONArray lineArrays = (JSONArray) jsonMessage.get("line");
+                        if (lineArrays == null) continue;
+                        JSONArray rowArray = (JSONArray) lineArrays.get(0);
+                        JSONArray columnArray = (JSONArray) lineArrays.get(1);
+                        if (rowArray == null || columnArray == null) continue;
+                        int rowStartNum = (int) (long) rowArray.get(0);
+                        int rowEndNum = (int) (long) rowArray.get(1);
+                        int colStartNum = (int) (long) columnArray.get(0);
+                        int colEndNum = (int) (long) columnArray.get(1);
 
-                    MessageObj msgObj = new MessageObj(fileDir, message, severityLevel, violationType, rowStartNum, rowEndNum, colStartNum, colEndNum);
-                    messagesList.add(msgObj);
+                        MessageObj msgObj = new MessageObj(fileDir, message, severityLevel, violationType, rowStartNum, rowEndNum, colStartNum, colEndNum);
+                        messagesList.add(msgObj);
+                    } catch (ClassCastException e){
+                    }
                 }
             }
         } catch (ParseException | IOException e) {
             LOGGER.error("Failed to lint file: " + file, e);
-            e.printStackTrace();
+            //e.printStackTrace();
+            return messagesList;
         }
         return messagesList;
     }
@@ -160,29 +164,42 @@ public class Linting {
         if (lineCount == 0) {
             return null;
         }
-        int lineNumber = (msgObj.getRowStartNum() >= lineCount) ? (lineCount - 1) : msgObj.getRowStartNum();
-        lineNumber = (lineNumber > 0) ? (lineNumber - 1) : 0;
-        final String lintMessage = msgObj.getViolationType() + ": " + msgObj.getMessage();
-
-        final int lineStartOffset = document.getLineStartOffset(lineNumber);
-        final int lineEndOffset = document.getLineEndOffset(lineNumber);
-
-        // Do not highlight empty whitespace prepended to lines.
-        final String text = document.getImmutableCharSequence().subSequence(
-                lineStartOffset, lineEndOffset).toString();
-
-        final int numberOfPrependedSpaces = text.length() -
-                text.replaceAll("^\\s+", "").length();
         ProblemHighlightType HighlightType = ProblemHighlightType.ERROR;
         if (msgObj.getSeverityLevel().equals("Warning")) {
             HighlightType = ProblemHighlightType.WARNING;
         }
+        int rowStart = (msgObj.getRowStartNum() >= lineCount) ? (lineCount - 1) : msgObj.getRowStartNum();
+        rowStart = (rowStart > 0) ? (rowStart - 1) : 0;
+        int rowEnd = (msgObj.getRowEndNum() >= lineCount) ? (lineCount - 1) : msgObj.getRowEndNum();
+        rowEnd = (rowEnd > 0) ? (rowEnd - 1) : 0;
+
+        final String lintMessage = msgObj.getViolationType() + ": " + msgObj.getMessage();
+        int lineStartOffset = document.getLineStartOffset(rowStart);
+        int lineEndOffset = document.getLineEndOffset(rowEnd);
+
+        if (msgObj.getRowStartNum() == msgObj.getRowEndNum() && msgObj.getColumnStartNum() == msgObj.getColumnEndNum()) {
+            // Do not highlight empty whitespace prepended to lines.
+            final String text = document.getImmutableCharSequence().subSequence(
+                    lineStartOffset, lineEndOffset).toString();
+            lineStartOffset += text.length() -
+                    text.replaceAll("^\\s+", "").length();
+        }else if (msgObj.getColumnStartNum() == msgObj.getColumnEndNum()){
+            final String text = document.getImmutableCharSequence().subSequence(
+                    lineStartOffset, document.getLineEndOffset(rowStart)).toString();
+            lineStartOffset += text.length() -
+                    text.replaceAll("^\\s+", "").length();
+        }else {
+            lineEndOffset = document.getLineStartOffset(rowEnd);
+            lineStartOffset += (msgObj.getColumnStartNum()>0?(msgObj.getColumnStartNum()-1):0);
+            lineEndOffset += (msgObj.getColumnEndNum()>0?(msgObj.getColumnEndNum()-1):0);
+        }
+
         return manager.createProblemDescriptor(
                 file,
-                TextRange.create(lineStartOffset + numberOfPrependedSpaces, lineEndOffset),
+                TextRange.create(lineStartOffset, lineEndOffset),
                 lintMessage,
                 HighlightType,
-                false
+                true
         );
     }
 }

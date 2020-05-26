@@ -18,7 +18,7 @@ Features
 Usage
 =====
 
- - Download the descamcheck plugin from [plugin link](https://github.com/ludwig247/DeSCAM/tree/feature-logging/plugins/CLion)
+ - Download the DescamCheck plugin for CLion.
  - Drag & drop the plugin onto CLion to install it.
  - Go to File -> Settings -> DeSCAM Check -> fill in the absolute paths to <b>*python*</b> and <b>*descam_check.py*</b>
  - To check a file, Go to Code -> Run Inspection by Name... (or CTRL + ALT + SHIFT + I) -> type descam and hit enter
