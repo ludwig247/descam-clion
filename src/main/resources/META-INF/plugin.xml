@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>com.github.ludwig247.clion.DeSCAM</id>
-    <name>DeSCAM Check</name>
+    <name>DeSCAMcheck</name>
     <vendor email="ludwig@eit.uni-kl.de" url="https://github.com/ludwig247/">Tobias Ludwig</vendor>
     <description><![CDATA[
     DeSCAM's SystemC-PPA files inspection plugin for CLion.<br/><br/>
@@ -10,8 +10,8 @@
      - The plugin supports both Unix and Windows based systems. <br/>
     <br/>
       <b>Usage:</b><br/>
-        - Download the descamcheck plugin from <URL>https://github.com/ludwig247/DeSCAM/tree/feature-logging/plugins/CLion</URL><br/>
-        - Drag & drop the plugin onto CLion to install it.<br/>
+        - Download the descamcheck plugin.<br/>
+        - Drag & drop the plugin zip file onto CLion to install it.<br/>
         - Go to File -> Settings -> DeSCAM Check -> fill in the absolute paths to <b>python</b> and <b>descam_check.py</b><br/>
         - To check a file, Go to Code -> Run Inspection by Name... (or CTRL + ALT + SHIFT + I) -> type descam and hit enter<br/>
         - Set the inpection scope to File and click OK.<br/>
